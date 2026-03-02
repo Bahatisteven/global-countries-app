@@ -6,7 +6,7 @@ import '../blocs/country_list/country_list_bloc.dart';
 import '../widgets/country_card.dart';
 import '../widgets/loading_shimmer.dart';
 import 'country_detail_page.dart';
-import 'favorites_page.dart';
+import '../../../favorites/presentation/pages/favorites_page.dart';
 
 class CountriesListPage extends StatefulWidget {
   const CountriesListPage({super.key});

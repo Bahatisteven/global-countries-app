@@ -1,4 +1,4 @@
-import '../entities/country_summary.dart';
+import '../../domain/entities/country_summary.dart';
 
 class CountrySummaryModel extends CountrySummary {
   const CountrySummaryModel({
