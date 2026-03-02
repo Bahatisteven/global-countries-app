@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection_container.dart';
 import '../blocs/favorites_bloc.dart';
-import '../../countries/presentation/pages/country_detail_page.dart';
+import '../../../countries/presentation/pages/country_detail_page.dart';
 
 class FavoritesPage extends StatelessWidget {
   const FavoritesPage({super.key});
