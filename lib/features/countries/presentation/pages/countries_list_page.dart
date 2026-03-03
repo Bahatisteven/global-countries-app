@@ -18,11 +18,14 @@ class CountriesListPage extends StatefulWidget {
   State<CountriesListPage> createState() => _CountriesListPageState();
 }
 
+enum SortOption { nameAsc, nameDesc, populationAsc, populationDesc }
+
 class _CountriesListPageState extends State<CountriesListPage> {
   final TextEditingController _searchController = TextEditingController();
   List<CountrySummary> _allCountries = [];
   List<CountrySummary> _displayedCountries = [];
   Timer? _debounceTimer;
+  SortOption _currentSort = SortOption.nameAsc;
 
   @override
   void initState() {
@@ -46,16 +49,44 @@ class _CountriesListPageState extends State<CountriesListPage> {
       final query = _searchController.text.toLowerCase();
       if (query.isEmpty) {
         setState(() {
-          _displayedCountries = _allCountries;
+          _displayedCountries = List.from(_allCountries);
+          _applySorting();
         });
       } else {
         setState(() {
           _displayedCountries = _allCountries
               .where((country) => country.name.toLowerCase().contains(query))
               .toList();
+          _applySorting();
         });
       }
     });
+  }
+
+  void _applySorting() {
+    switch (_currentSort) {
+      case SortOption.nameAsc:
+        _displayedCountries.sort((a, b) => a.name.compareTo(b.name));
+        break;
+      case SortOption.nameDesc:
+        _displayedCountries.sort((a, b) => b.name.compareTo(a.name));
+        break;
+      case SortOption.populationAsc:
+        _displayedCountries.sort((a, b) => a.population.compareTo(b.population));
+        break;
+      case SortOption.populationDesc:
+        _displayedCountries.sort((a, b) => b.population.compareTo(a.population));
+        break;
+    }
+  }
+
+  void _changeSortOption(SortOption? option) {
+    if (option != null && option != _currentSort) {
+      setState(() {
+        _currentSort = option;
+        _applySorting();
+      });
+    }
   }
 
   @override
@@ -66,6 +97,53 @@ class _CountriesListPageState extends State<CountriesListPage> {
         appBar: widget.showAppBar ? AppBar(
           title: const Text('Countries'),
           actions: [
+            PopupMenuButton<SortOption>(
+              icon: const Icon(Icons.sort),
+              tooltip: 'Sort countries',
+              onSelected: _changeSortOption,
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: SortOption.nameAsc,
+                  child: Row(
+                    children: [
+                      Icon(Icons.sort_by_alpha),
+                      SizedBox(width: 8),
+                      Text('Name (A-Z)'),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: SortOption.nameDesc,
+                  child: Row(
+                    children: [
+                      Icon(Icons.sort_by_alpha),
+                      SizedBox(width: 8),
+                      Text('Name (Z-A)'),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: SortOption.populationAsc,
+                  child: Row(
+                    children: [
+                      Icon(Icons.arrow_upward),
+                      SizedBox(width: 8),
+                      Text('Population (Low-High)'),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: SortOption.populationDesc,
+                  child: Row(
+                    children: [
+                      Icon(Icons.arrow_downward),
+                      SizedBox(width: 8),
+                      Text('Population (High-Low)'),
+                    ],
+                  ),
+                ),
+              ],
+            ),
             IconButton(
               icon: const Icon(Icons.favorite),
               onPressed: () {
@@ -107,7 +185,8 @@ class _CountriesListPageState extends State<CountriesListPage> {
                   } else if (state is CountryListLoaded) {
                     _allCountries = state.countries;
                     if (_displayedCountries.isEmpty && _searchController.text.isEmpty) {
-                      _displayedCountries = _allCountries;
+                      _displayedCountries = List.from(_allCountries);
+                      _applySorting();
                     }
                     
                     if (_displayedCountries.isEmpty) {
