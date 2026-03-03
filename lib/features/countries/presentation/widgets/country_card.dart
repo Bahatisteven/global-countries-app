@@ -32,7 +32,7 @@ class CountryCard extends StatelessWidget {
                   width: 80,
                   height: 60,
                   fit: BoxFit.cover,
-                  placeholder: (_, __) => Container(
+                  placeholder: (context, url) => Container(
                     width: 80,
                     height: 60,
                     color: Colors.grey[300],
@@ -40,7 +40,7 @@ class CountryCard extends StatelessWidget {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     ),
                   ),
-                  errorWidget: (_, __, ___) => Container(
+                  errorWidget: (context, url, error) => Container(
                     width: 80,
                     height: 60,
                     color: Colors.grey[300],
