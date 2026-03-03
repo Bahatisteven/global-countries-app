@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection_container.dart';
@@ -9,7 +10,9 @@ import 'country_detail_page.dart';
 import '../../../favorites/presentation/pages/favorites_page.dart';
 
 class CountriesListPage extends StatefulWidget {
-  const CountriesListPage({super.key});
+  final bool showAppBar;
+  
+  const CountriesListPage({super.key, this.showAppBar = true});
 
   @override
   State<CountriesListPage> createState() => _CountriesListPageState();
@@ -19,6 +22,7 @@ class _CountriesListPageState extends State<CountriesListPage> {
   final TextEditingController _searchController = TextEditingController();
   List<CountrySummary> _allCountries = [];
   List<CountrySummary> _displayedCountries = [];
+  Timer? _debounceTimer;
 
   @override
   void initState() {
@@ -28,23 +32,30 @@ class _CountriesListPageState extends State<CountriesListPage> {
 
   @override
   void dispose() {
+    _debounceTimer?.cancel();
     _searchController.dispose();
     super.dispose();
   }
 
   void _onSearchChanged() {
-    final query = _searchController.text.toLowerCase();
-    if (query.isEmpty) {
-      setState(() {
-        _displayedCountries = _allCountries;
-      });
-    } else {
-      setState(() {
-        _displayedCountries = _allCountries
-            .where((country) => country.name.toLowerCase().contains(query))
-            .toList();
-      });
+    if (_debounceTimer?.isActive ?? false) {
+      _debounceTimer!.cancel();
     }
+    
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+      final query = _searchController.text.toLowerCase();
+      if (query.isEmpty) {
+        setState(() {
+          _displayedCountries = _allCountries;
+        });
+      } else {
+        setState(() {
+          _displayedCountries = _allCountries
+              .where((country) => country.name.toLowerCase().contains(query))
+              .toList();
+        });
+      }
+    });
   }
 
   @override
@@ -52,7 +63,7 @@ class _CountriesListPageState extends State<CountriesListPage> {
     return BlocProvider(
       create: (_) => sl<CountryListBloc>()..add(LoadCountriesEvent()),
       child: Scaffold(
-        appBar: AppBar(
+        appBar: widget.showAppBar ? AppBar(
           title: const Text('Countries'),
           actions: [
             IconButton(
@@ -67,7 +78,7 @@ class _CountriesListPageState extends State<CountriesListPage> {
               },
             ),
           ],
-        ),
+        ) : null,
         body: Column(
           children: [
             Padding(

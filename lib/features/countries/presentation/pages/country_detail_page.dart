@@ -68,16 +68,19 @@ class CountryDetailPage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Center(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Image.network(
-                          country.flagUrl,
-                          height: 200,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Container(
+                      child: Hero(
+                        tag: 'flag-$countryCode',
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.network(
+                            country.flagUrl,
                             height: 200,
-                            color: Colors.grey[300],
-                            child: const Icon(Icons.flag, size: 64),
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, url, error) => Container(
+                              height: 200,
+                              color: Colors.grey[300],
+                              child: const Icon(Icons.flag, size: 64),
+                            ),
                           ),
                         ),
                       ),
