@@ -1,4 +1,4 @@
-# Countries App - Flutter Project Assessment
+# Countries App - Flutter Project
 
 A Flutter application for browsing, searching, and learning about countries worldwide using the REST Countries API.
 
