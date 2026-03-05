@@ -21,25 +21,37 @@ class CountryRemoteDatasourceImpl implements CountryRemoteDatasource {
       final response = await dio.get(
         ApiConstants.allCountries,
         queryParameters: {'fields': ApiConstants.listFields},
+      ).timeout(
+        const Duration(seconds: 5),
+        onTimeout: () {
+          throw NetworkException('Connection timeout - please check your internet');
+        },
       );
 
       if (response.statusCode == 200) {
         final List<dynamic> data = response.data;
+        if (data.isEmpty) {
+          return [];
+        }
         return data.map((json) => CountrySummaryModel.fromJson(json)).toList();
       } else {
-        throw ServerException('Failed to load countries');
+        throw ServerException('Failed to load countries: ${response.statusCode}');
       }
     } on DioException catch (e) {
       if (e.type == DioExceptionType.connectionTimeout ||
           e.type == DioExceptionType.receiveTimeout) {
-        throw NetworkException('Connection timeout');
+        throw NetworkException('Connection timeout - please check your internet');
       } else if (e.type == DioExceptionType.connectionError) {
-        throw NetworkException('No internet connection');
+        throw NetworkException('No internet connection - please connect to WiFi or mobile data');
+      } else if (e.response != null) {
+        throw ServerException('Server error: ${e.response?.statusCode}');
       } else {
-        throw ServerException(e.message ?? 'Server error');
+        throw ServerException(e.message ?? 'Unknown server error');
       }
+    } on NetworkException {
+      rethrow;
     } catch (e) {
-      throw ServerException(e.toString());
+      throw ServerException('Unable to load countries: ${e.toString()}');
     }
   }
 
@@ -83,9 +95,11 @@ class CountryRemoteDatasourceImpl implements CountryRemoteDatasource {
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = response.data;
-        if (data.isNotEmpty) {
+        final dynamic data = response.data;
+        if (data is List && data.isNotEmpty) {
           return CountryDetailsModel.fromJson(data[0]);
+        } else if (data is Map<String, dynamic>) {
+          return CountryDetailsModel.fromJson(data);
         } else {
           throw ServerException('Country not found');
         }

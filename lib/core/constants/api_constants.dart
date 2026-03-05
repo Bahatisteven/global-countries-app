@@ -10,5 +10,5 @@ class ApiConstants {
   static const String listFields = 'name,flags,population,cca2';
   
   // Fields for detail view (full data)
-  static const String detailFields = 'name,flags,population,capital,region,subregion,area,timezones';
+  static const String detailFields = 'name,flags,population,capital,region,subregion,area,timezones,cca2';
 }

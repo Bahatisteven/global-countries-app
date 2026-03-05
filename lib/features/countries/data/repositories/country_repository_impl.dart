@@ -14,14 +14,19 @@ class CountryRepositoryImpl implements CountryRepository {
   @override
   Future<Either<Failure, List<CountrySummary>>> getAllCountries() async {
     try {
-      final countries = await remoteDatasource.getAllCountries();
+      final countries = await remoteDatasource.getAllCountries().timeout(
+        const Duration(seconds: 6),
+        onTimeout: () {
+          throw NetworkException('Request timeout');
+        },
+      );
       return Right(countries);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } on NetworkException catch (e) {
       return Left(NetworkFailure(e.message));
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(ServerFailure('Error loading countries: ${e.toString()}'));
     }
   }
 

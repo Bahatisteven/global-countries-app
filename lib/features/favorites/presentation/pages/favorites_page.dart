@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/di/injection_container.dart';
+import '../../../../core/utils/responsive_helper.dart';
 import '../blocs/favorites_bloc.dart';
 import '../../../countries/presentation/pages/country_detail_page.dart';
 import '../../../countries/presentation/blocs/country_detail/country_detail_bloc.dart';
@@ -50,6 +51,27 @@ class FavoritesPage extends StatelessWidget {
                       ),
                     ],
                   ),
+                );
+              }
+
+              final isTabletOrDesktop = !ResponsiveHelper.isMobile(context);
+              
+              if (isTabletOrDesktop) {
+                return GridView.builder(
+                  padding: ResponsiveHelper.getPagePadding(context),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: ResponsiveHelper.getGridCrossAxisCount(context),
+                    childAspectRatio: ResponsiveHelper.getGridChildAspectRatio(context),
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                  ),
+                  itemCount: state.favorites.length,
+                  itemBuilder: (context, index) {
+                    final countryCode = state.favorites[index];
+                    return _FavoriteCountryCard(
+                      countryCode: countryCode,
+                    );
+                  },
                 );
               }
 

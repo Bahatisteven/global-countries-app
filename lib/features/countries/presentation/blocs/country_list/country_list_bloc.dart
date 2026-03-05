@@ -25,11 +25,15 @@ class CountryListBloc extends Bloc<CountryListEvent, CountryListState> {
     Emitter<CountryListState> emit,
   ) async {
     emit(CountryListLoading());
-    final result = await getAllCountries();
-    result.fold(
-      (failure) => emit(CountryListError(failure.message)),
-      (countries) => emit(CountryListLoaded(countries)),
-    );
+    try {
+      final result = await getAllCountries();
+      result.fold(
+        (failure) => emit(CountryListError(failure.message)),
+        (countries) => emit(CountryListLoaded(countries)),
+      );
+    } catch (e) {
+      emit(CountryListError('Failed to load countries: ${e.toString()}'));
+    }
   }
 
   Future<void> _onSearchCountries(

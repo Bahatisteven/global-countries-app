@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/utils/string_extensions.dart';
+import '../../../../core/utils/responsive_helper.dart';
 import '../blocs/country_detail/country_detail_bloc.dart';
 import '../../../favorites/presentation/blocs/favorites_bloc.dart';
 
@@ -62,68 +63,46 @@ class CountryDetailPage extends StatelessWidget {
               return const Center(child: CircularProgressIndicator());
             } else if (state is CountryDetailLoaded) {
               final country = state.country;
-              return SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Center(
-                      child: Hero(
-                        tag: 'flag-$countryCode',
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.network(
-                            country.flagUrl,
-                            height: 200,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, url, error) => Container(
-                              height: 200,
-                              color: Colors.grey[300],
-                              child: const Icon(Icons.flag, size: 64),
+              return Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: ResponsiveHelper.getMaxContentWidth(context),
+                  ),
+                  child: SingleChildScrollView(
+                    padding: ResponsiveHelper.getPagePadding(context),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Center(
+                          child: Hero(
+                            tag: 'flag-$countryCode',
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.network(
+                                country.flagUrl,
+                                height: ResponsiveHelper.isMobile(context) ? 200 : 300,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, url, error) => Container(
+                                  height: ResponsiveHelper.isMobile(context) ? 200 : 300,
+                                  color: Colors.grey[300],
+                                  child: const Icon(Icons.flag, size: 64),
+                                ),
+                              ),
                             ),
                           ),
                         ),
-                      ),
+                        const SizedBox(height: 24),
+                        Text(
+                          country.name,
+                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                        ),
+                        const SizedBox(height: 24),
+                        _buildResponsiveInfoCards(context, country),
+                      ],
                     ),
-                    const SizedBox(height: 24),
-                    Text(
-                      country.name,
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                    ),
-                    const SizedBox(height: 24),
-                    _InfoCard(
-                      icon: Icons.people,
-                      title: 'Population',
-                      value: country.population.toFormattedString(),
-                    ),
-                    _InfoCard(
-                      icon: Icons.location_city,
-                      title: 'Capital',
-                      value: country.capital.join(', '),
-                    ),
-                    _InfoCard(
-                      icon: Icons.public,
-                      title: 'Region',
-                      value: country.region,
-                    ),
-                    _InfoCard(
-                      icon: Icons.map,
-                      title: 'Subregion',
-                      value: country.subregion,
-                    ),
-                    _InfoCard(
-                      icon: Icons.square_foot,
-                      title: 'Area',
-                      value: '${country.area.toFormattedString()} km²',
-                    ),
-                    _InfoCard(
-                      icon: Icons.access_time,
-                      title: 'Timezones',
-                      value: country.timezones.join(', '),
-                    ),
-                  ],
+                  ),
                 ),
               );
             } else if (state is CountryDetailError) {
@@ -151,6 +130,57 @@ class CountryDetailPage extends StatelessWidget {
           },
         ),
       ),
+    );
+  }
+
+  Widget _buildResponsiveInfoCards(BuildContext context, country) {
+    final infoCards = [
+      _InfoCard(
+        icon: Icons.people,
+        title: 'Population',
+        value: country.population.toFormattedString(),
+      ),
+      _InfoCard(
+        icon: Icons.location_city,
+        title: 'Capital',
+        value: country.capital.isEmpty ? 'N/A' : country.capital.join(', '),
+      ),
+      _InfoCard(
+        icon: Icons.public,
+        title: 'Region',
+        value: country.region,
+      ),
+      _InfoCard(
+        icon: Icons.map,
+        title: 'Subregion',
+        value: country.subregion.isEmpty ? 'N/A' : country.subregion,
+      ),
+      _InfoCard(
+        icon: Icons.square_foot,
+        title: 'Area',
+        value: '${country.area.toFormattedString()} km²',
+      ),
+      _InfoCard(
+        icon: Icons.access_time,
+        title: 'Timezones',
+        value: country.timezones.join(', '),
+      ),
+    ];
+
+    if (ResponsiveHelper.isMobile(context)) {
+      return Column(children: infoCards);
+    }
+
+    // For tablet and desktop, show cards in a 2-column grid
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children: infoCards.map((card) {
+        return SizedBox(
+          width: (MediaQuery.of(context).size.width - 200) / 2,
+          child: card,
+        );
+      }).toList(),
     );
   }
 }

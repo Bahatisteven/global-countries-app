@@ -26,7 +26,7 @@ final sl = GetIt.instance;
 Future<void> init() async {
   //! Features - Countries
   // Blocs
-  sl.registerFactory(
+  sl.registerLazySingleton(
     () => CountryListBloc(
       getAllCountries: sl(),
       searchCountries: sl(),
@@ -56,7 +56,7 @@ Future<void> init() async {
 
   //! Features - Favorites
   // Blocs
-  sl.registerFactory(
+  sl.registerLazySingleton(
     () => FavoritesBloc(
       getFavorites: sl(),
       addFavorite: sl(),
@@ -87,7 +87,6 @@ Future<void> init() async {
 }
 
 Future<void> _initHive() async {
-  await Hive.initFlutter();
   await Hive.openBox('favorites');
 }
 
@@ -95,8 +94,8 @@ Dio _createDio() {
   final dio = Dio(
     BaseOptions(
       baseUrl: 'https://restcountries.com/v3.1',
-      connectTimeout: const Duration(seconds: 30),
-      receiveTimeout: const Duration(seconds: 30),
+      connectTimeout: const Duration(seconds: 5),
+      receiveTimeout: const Duration(seconds: 5),
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
